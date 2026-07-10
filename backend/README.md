@@ -1,172 +1,188 @@
-# FastAPI Project - Backend
+# FastAPI Проект - Бэкенд
 
-## Requirements
+Этот каталог содержит исходный код бэкенда, построенного на основе **FastAPI** и **SQLModel**.
 
-* [Docker](https://www.docker.com/).
-* [uv](https://docs.astral.sh/uv/) for Python package and environment management.
+## Требования
 
-## Docker Compose
+* **[Docker](https://www.docker.com/)** — для запуска контейнеров (БД, прокси, почтовый сервер и др.).
+* **[uv](https://docs.astral.sh/uv/)** — современный инструмент для управления зависимостями и виртуальным окружением Python.
 
-Start the local development environment with Docker Compose following the guide in [../development.md](../development.md).
+---
 
-## General Workflow
+## Варианты запуска проекта
 
-By default, the dependencies are managed with [uv](https://docs.astral.sh/uv/), go there and install it.
+### Вариант 1. Запуск через Docker Compose (Рекомендуемый)
 
-From `./backend/` you can install all the dependencies with:
+Этот способ автоматически разворачивает всю инфраструктуру (бэкенд, фронтенд, PostgreSQL, Adminer, Traefik, Mailcatcher).
 
-```console
-$ uv sync
-```
-
-Then you can activate the virtual environment with:
-
-```console
-$ source .venv/bin/activate
-```
-
-Make sure your editor is using the correct Python virtual environment, with the interpreter at `backend/.venv/bin/python`.
-
-Modify or add SQLModel models for data and SQL tables in `./backend/app/models.py`, API endpoints in `./backend/app/api/`, CRUD (Create, Read, Update, Delete) utils in `./backend/app/crud.py`.
-
-## VS Code
-
-There are already configurations in place to run the backend through the VS Code debugger, so that you can use breakpoints, pause and explore variables, etc.
-
-The setup is also already configured so you can run the tests through the VS Code Python tests tab.
-
-## Docker Compose Override
-
-During development, you can change Docker Compose settings that will only affect the local development environment in the file `compose.override.yml`.
-
-The changes to that file only affect the local development environment, not the production environment. So, you can add "temporary" changes that help the development workflow.
-
-For example, the directory with the backend code is synchronized in the Docker container, copying the code you change live to the directory inside the container. That allows you to test your changes right away, without having to build the Docker image again. It should only be done during development, for production, you should build the Docker image with a recent version of the backend code. But during development, it allows you to iterate very fast.
-
-There is also a command override that runs `fastapi run --reload` instead of the default `fastapi run`. It starts a single server process (instead of multiple, as would be for production) and reloads the process whenever the code changes. Have in mind that if you have a syntax error and save the Python file, it will break and exit, and the container will stop. After that, you can restart the container by fixing the error and running again:
-
+Запустите проект из корневой директории:
 ```console
 $ docker compose watch
 ```
 
-There is also a commented out `command` override, you can uncomment it and comment the default one. It makes the backend container run a process that does "nothing", but keeps the container alive. That allows you to get inside your running container and execute commands inside, for example a Python interpreter to test installed dependencies, or start the development server that reloads when it detects changes.
+**Полезные URL локальной разработки:**
+* **Бэкенд API:** [http://localhost:8000](http://localhost:8000)
+* **Документация Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Документация ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+* **Adminer (управление БД PostgreSQL):** [http://localhost:8080](http://localhost:8080)
+* **Mailcatcher (веб-интерфейс для перехвата писем):** [http://localhost:1080](http://localhost:1080)
 
-To get inside the container with a `bash` session you can start the stack with:
-
+#### Отключение контейнера бэкенда для локальной разработки
+Если вы хотите запустить бэкенд локально на хост-машине (например, для отладки), но сохранить запущенными базу данных и остальные сервисы в Docker, остановите бэкенд в Docker:
 ```console
-$ docker compose watch
+$ docker compose stop backend
 ```
 
-and then in another terminal, `exec` inside the running container:
+---
 
+### Вариант 2. Локальный запуск (на хост-машине)
+
+Убедитесь, что база данных запущена (например, через Docker Compose).
+
+1. Перейдите в каталог бэкенда:
+   ```console
+   $ cd backend
+   ```
+2. Установите все зависимости с помощью `uv`:
+   ```console
+   $ uv sync
+   ```
+3. Активируйте виртуальное окружение:
+   * **Windows (PowerShell):**
+     ```powershell
+     $ .venv\Scripts\Activate.ps1
+     ```
+   * **Windows (Cmd):**
+     ```cmd
+     > .venv\Scripts\activate.bat
+     ```
+   * **macOS / Linux / Git Bash:**
+     ```bash
+     $ source .venv/bin/activate
+     ```
+4. Убедитесь, что ваша IDE использует интерпретатор Python из виртуального окружения: `backend/.venv/bin/python` (или `backend/.venv/Scripts/python.exe` на Windows).
+5. Запустите локальный сервер разработки:
+   ```console
+   $ fastapi dev app/main.py
+   ```
+   Сервер запустится на порту `8000` и будет автоматически перезапускаться при изменении кода.
+
+---
+
+## Структура кода и рабочий процесс
+
+Основные файлы и папки бэкенда:
+* `app/models.py` — модели данных и таблицы базы данных (SQLModel). При изменении структуры таблиц необходимо генерировать миграции Alembic.
+* `app/api/` — эндпоинты API (роутеры).
+* `app/crud.py` — вспомогательные функции для CRUD-операций (Create, Read, Update, Delete).
+* `app/core/` — конфигурационные файлы приложения, настройки БД, безопасность.
+
+### Работа внутри Docker-контейнера
+
+Если проект запущен через `docker compose watch`, изменения в коде синхронизируются с контейнером автоматически. 
+
+Вы можете войти в терминал запущенного контейнера бэкенда:
 ```console
 $ docker compose exec backend bash
 ```
-
-You should see an output like:
-
-```console
-root@7f2607af31c3:/app#
-```
-
-that means that you are in a `bash` session inside your container, as a `root` user, under the `/app` directory, this directory has another directory called "app" inside, that's where your code lives inside the container: `/app/app`.
-
-There you can use the `fastapi run --reload` command to run the debug live reloading server.
-
+Внутри контейнера рабочая директория — `/app`. Вы можете вручную запустить там сервер разработки с автоперезагрузкой:
 ```console
 $ fastapi run --reload app/main.py
 ```
 
-...it will look like:
+---
 
-```console
-root@7f2607af31c3:/app# fastapi run --reload app/main.py
-```
+## Миграции базы данных (Alembic)
 
-and then hit enter. That runs the live reloading server that auto reloads when it detects code changes.
+Поскольку папка с кодом монтируется в Docker как volume, генерируемые внутри контейнера миграции Alembic будут создаваться в вашей локальной файловой системе, и их можно будет закоммитить в Git.
 
-Nevertheless, if it doesn't detect a change but a syntax error, it will just stop with an error. But as the container is still alive and you are in a Bash session, you can quickly restart it after fixing the error, running the same command ("up arrow" and "Enter").
+Каждый раз при изменении моделей в `app/models.py` (например, при добавлении колонки в таблицу) выполняйте следующие шаги:
 
-...this previous detail is what makes it useful to have the container alive doing nothing and then, in a Bash session, make it run the live reload server.
+1. Подключитесь к интерактивной сессии контейнера бэкенда:
+   ```console
+   $ docker compose exec backend bash
+   ```
+2. Создайте новую миграцию (ревизию):
+   ```console
+   $ alembic revision --autogenerate -m "Add column last_name to User model"
+   ```
+3. Проверьте сгенерированный файл в папке `backend/app/alembic/versions/` и закоммитьте его в Git.
+4. Примените миграцию к базе данных:
+   ```console
+   $ alembic upgrade head
+   ```
 
-## Backend tests
+#### Отключение миграций Alembic (автоматическое создание таблиц)
+Если вам не нужны миграции и вы хотите, чтобы таблицы создавались автоматически при старте приложения:
+1. В файле `./backend/app/core/db.py` раскомментируйте строку:
+   ```python
+   SQLModel.metadata.create_all(engine)
+   ```
+2. В файле `scripts/prestart.sh` закомментируйте строку:
+   ```console
+   $ alembic upgrade head
+   ```
+3. Удалите файлы с расширением `.py` из папки `./backend/app/alembic/versions/`.
 
-To test the backend run:
+---
 
+## Тестирование бэкенда
+
+Тесты написаны с использованием **Pytest**. Код тестов находится в папке `./backend/tests/`.
+
+### Запуск тестов на локальной машине:
 ```console
 $ bash ./scripts/test.sh
 ```
 
-The tests run with Pytest, modify and add tests to `./backend/tests/`.
-
-If you use GitHub Actions the tests will run automatically.
-
-### Test running stack
-
-If your stack is already up and you just want to run the tests, you can use:
-
-```bash
-docker compose exec backend bash scripts/tests-start.sh
-```
-
-That `/app/scripts/tests-start.sh` script just calls `pytest` after making sure that the rest of the stack is running. If you need to pass extra arguments to `pytest`, you can pass them to that command and they will be forwarded.
-
-For example, to stop on first error:
-
-```bash
-docker compose exec backend bash scripts/tests-start.sh -x
-```
-
-### Test Coverage
-
-When the tests are run, a file `htmlcov/index.html` is generated, you can open it in your browser to see the coverage of the tests.
-
-## Migrations
-
-As during local development your app directory is mounted as a volume inside the container, you can also run the migrations with `alembic` commands inside the container and the migration code will be in your app directory (instead of being only inside the container). So you can add it to your git repository.
-
-Make sure you create a "revision" of your models and that you "upgrade" your database with that revision every time you change them. As this is what will update the tables in your database. Otherwise, your application will have errors.
-
-* Start an interactive session in the backend container:
-
+### Запуск тестов внутри Docker:
+Если контейнеры уже запущены, вы можете запустить тесты внутри контейнера бэкенда:
 ```console
-$ docker compose exec backend bash
+$ docker compose exec backend bash scripts/tests-start.sh
 ```
-
-* Alembic is already configured to import your SQLModel models from `./backend/app/models.py`.
-
-* After changing a model (for example, adding a column), inside the container, create a revision, e.g.:
-
+Вы можете передавать дополнительные параметры в `pytest`. Например, для остановки теста при первой ошибке (`-x`):
 ```console
-$ alembic revision --autogenerate -m "Add column last_name to User model"
+$ docker compose exec backend bash scripts/tests-start.sh -x
 ```
 
-* Commit to the git repository the files generated in the alembic directory.
+### Покрытие тестов (Coverage)
+После прохождения тестов в корневой папке бэкенда будет создана директория `htmlcov/`. Откройте файл `htmlcov/index.html` в браузере, чтобы посмотреть подробный отчет по покрытию кода тестами.
 
-* After creating the revision, run the migration in the database (this is what will actually change the database):
+---
 
+## Форматирование и качество кода (Linter)
+
+В проекте используется инструмент **prek** (современная альтернатива pre-commit) для автоматической проверки и форматирования кода перед коммитами. Конфигурация находится в корневом файле `.pre-commit-config.yaml`.
+
+### Установка pre-commit хука:
+Чтобы проверки запускались автоматически при выполнении `git commit`, выполните команду (находясь в папке `backend`):
 ```console
-$ alembic upgrade head
+$ uv run prek install -f
 ```
+Теперь при каждом коммите код будет проверяться и форматироваться. Если возникнут автоматические исправления, добавьте их с помощью `git add` и повторите коммит.
 
-If you don't want to use migrations at all, uncomment the lines in the file at `./backend/app/core/db.py` that end in:
-
-```python
-SQLModel.metadata.create_all(engine)
-```
-
-and comment the line in the file `scripts/prestart.sh` that contains:
-
+### Ручной запуск проверки для всех файлов:
 ```console
-$ alembic upgrade head
+$ uv run prek run --all-files
 ```
 
-If you don't want to start with the default models and want to remove them / modify them, from the beginning, without having any previous revision, you can remove the revision files (`.py` Python files) under `./backend/app/alembic/versions/`. And then create a first migration as described above.
+---
 
-## Email Templates
+## Шаблоны писем (Email Templates)
 
-The email templates are in `./backend/app/email-templates/`. Here, there are two directories: `build` and `src`. The `src` directory contains the source files that are used to build the final email templates. The `build` directory contains the final email templates that are used by the application.
+Шаблоны писем хранятся в директории `./backend/app/email-templates/`:
+* `src/` — исходные шаблоны на языке разметки MJML.
+* `build/` — скомпилированные HTML-файлы, которые используются бэкендом.
 
-Before continuing, ensure you have the [MJML extension](https://github.com/mjmlio/vscode-mjml) installed in your VS Code.
+**Процесс изменения/добавления шаблона:**
+1. Установите расширение **MJML** для VS Code (или аналогичное для вашей IDE).
+2. Создайте или измените `.mjml` файл в папке `src/`.
+3. Откройте этот файл, вызовите палитру команд (`Ctrl+Shift+P`), выберите **MJML: Export to HTML** и сохраните получившийся файл в папку `build/`.
 
-Once you have the MJML extension installed, you can create a new email template in the `src` directory. After creating the new email template and with the `.mjml` file open in your editor, open the command palette with `Ctrl+Shift+P` and search for `MJML: Export to HTML`. This will convert the `.mjml` file to a `.html` file and now you can save it in the build directory.
+---
+
+## Интеграция с VS Code
+
+В проекте настроены конфигурации VS Code для:
+* Запуска бэкенда через встроенный дебаггер (с поддержкой точек останова (breakpoints) и исследования переменных).
+* Запуска и отладки тестов непосредственно через вкладку тестов (Testing panel) в VS Code.

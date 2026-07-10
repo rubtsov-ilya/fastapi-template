@@ -5,3 +5,25 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Python / Virtual Environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# IDEs
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+

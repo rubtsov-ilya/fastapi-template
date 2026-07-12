@@ -1,12 +1,11 @@
 from pwdlib.hashers.bcrypt import BcryptHasher
 from sqlmodel import Session
 
-from app.core.security import verify_password
+from app.core.security import get_password_hash, verify_password
 from app.models import User
+from app.repositories import user_repo
 from app.schemas import UserCreate
 from app.services import authenticate_user
-from app.repositories import user_repo
-from app.core.security import get_password_hash
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -15,7 +14,9 @@ def test_authenticate_user(db: Session) -> None:
     password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
     hashed_password = get_password_hash(password)
-    user = user_repo.create_user(session=db, user_create=user_in, hashed_password=hashed_password)
+    user = user_repo.create_user(
+        session=db, user_create=user_in, hashed_password=hashed_password
+    )
     authenticated_user = authenticate_user(session=db, email=email, password=password)
     assert authenticated_user
     assert user.email == authenticated_user.email

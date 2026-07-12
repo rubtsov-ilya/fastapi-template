@@ -4,13 +4,13 @@ from typing import Any
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
-from app.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
 from app.repositories import item_repo
+from app.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
 from app.services import (
-    get_item_service,
     create_item_service,
-    update_item_service,
     delete_item_service,
+    get_item_service,
+    update_item_service,
 )
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -27,7 +27,9 @@ def read_items(
         count = item_repo.count_items(session=session)
         items = item_repo.get_items_paginated(session=session, skip=skip, limit=limit)
     else:
-        count = item_repo.count_items_by_owner(session=session, owner_id=current_user.id)
+        count = item_repo.count_items_by_owner(
+            session=session, owner_id=current_user.id
+        )
         items = item_repo.get_items_by_owner_paginated(
             session=session, owner_id=current_user.id, skip=skip, limit=limit
         )
@@ -51,7 +53,9 @@ def create_item(
     """
     Create new item.
     """
-    return create_item_service(session=session, item_in=item_in, owner_id=current_user.id)
+    return create_item_service(
+        session=session, item_in=item_in, owner_id=current_user.id
+    )
 
 
 @router.put("/{id}", response_model=ItemPublic)

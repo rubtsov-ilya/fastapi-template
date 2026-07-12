@@ -333,8 +333,6 @@ Traefik UI: `https://traefik.fastapi-project.example.com`
 
 ### Production
 
-Frontend: `https://dashboard.fastapi-project.example.com`
-
 Backend API docs: `https://api.fastapi-project.example.com/docs`
 
 Backend API base URL: `https://api.fastapi-project.example.com`
@@ -342,8 +340,6 @@ Backend API base URL: `https://api.fastapi-project.example.com`
 Adminer: `https://adminer.fastapi-project.example.com`
 
 ### Staging
-
-Frontend: `https://dashboard.staging.fastapi-project.example.com`
 
 Backend API docs: `https://api.staging.fastapi-project.example.com/docs`
 

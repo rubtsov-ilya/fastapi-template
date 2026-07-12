@@ -8,6 +8,7 @@ from app.api.deps import (
     SessionDep,
     get_current_active_superuser,
 )
+from app.repositories import user_repo
 from app.schemas import (
     Message,
     UpdatePassword,
@@ -18,12 +19,11 @@ from app.schemas import (
     UserUpdate,
     UserUpdateMe,
 )
-from app.repositories import user_repo
 from app.services import (
     create_user_service,
-    update_user_service,
-    update_user_me_service,
     update_password_me_service,
+    update_user_me_service,
+    update_user_service,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -61,7 +61,9 @@ def update_user_me(
     """
     Update own user.
     """
-    return update_user_me_service(session=session, current_user=current_user, user_in=user_in)
+    return update_user_me_service(
+        session=session, current_user=current_user, user_in=user_in
+    )
 
 
 @router.patch("/me/password", response_model=Message)
@@ -164,4 +166,3 @@ def delete_user(
         )
     user_repo.delete_user(session=session, db_user=user)
     return Message(message="User deleted successfully")
-

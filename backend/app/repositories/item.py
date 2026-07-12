@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select, col, func
+from sqlmodel import Session, col, func, select
 
 from app.models import Item
 from app.schemas import ItemCreate, ItemUpdate
@@ -10,7 +10,9 @@ def get_item_by_id(*, session: Session, item_id: uuid.UUID) -> Item | None:
     return session.get(Item, item_id)
 
 
-def get_items_paginated(*, session: Session, skip: int = 0, limit: int = 100) -> list[Item]:
+def get_items_paginated(
+    *, session: Session, skip: int = 0, limit: int = 100
+) -> list[Item]:
     statement = (
         select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
     )
@@ -37,9 +39,7 @@ def get_items_by_owner_paginated(
 
 def count_items_by_owner(*, session: Session, owner_id: uuid.UUID) -> int:
     count_statement = (
-        select(func.count())
-        .select_from(Item)
-        .where(Item.owner_id == owner_id)
+        select(func.count()).select_from(Item).where(Item.owner_id == owner_id)
     )
     return session.exec(count_statement).one()
 

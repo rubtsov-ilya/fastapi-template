@@ -1,13 +1,16 @@
 import uuid
+
 from fastapi import HTTPException
 from sqlmodel import Session
 
 from app.models import Item, User
-from app.schemas import ItemCreate, ItemUpdate
 from app.repositories import item_repo
+from app.schemas import ItemCreate, ItemUpdate
 
 
-def get_item_service(*, session: Session, current_user: User, item_id: uuid.UUID) -> Item:
+def get_item_service(
+    *, session: Session, current_user: User, item_id: uuid.UUID
+) -> Item:
     """
     Get item by ID with ownership validation.
     """
@@ -19,7 +22,9 @@ def get_item_service(*, session: Session, current_user: User, item_id: uuid.UUID
     return item
 
 
-def create_item_service(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -> Item:
+def create_item_service(
+    *, session: Session, item_in: ItemCreate, owner_id: uuid.UUID
+) -> Item:
     """
     Create new item.
     """
@@ -36,7 +41,9 @@ def update_item_service(
     return item_repo.update_item(session=session, db_item=item, item_in=item_in)
 
 
-def delete_item_service(*, session: Session, current_user: User, item_id: uuid.UUID) -> None:
+def delete_item_service(
+    *, session: Session, current_user: User, item_id: uuid.UUID
+) -> None:
     """
     Delete an item with ownership validation.
     """

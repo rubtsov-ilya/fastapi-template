@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
-from app.schemas import Message, NewPassword, Token, UserPublic
 from app.repositories import user_repo
+from app.schemas import Message, NewPassword, Token, UserPublic
 from app.services import (
     authenticate_user,
     create_access_token_for_user,
@@ -84,4 +84,3 @@ def recover_password_html_content(email: str, session: SessionDep) -> Any:
     return HTMLResponse(
         content=email_data.html_content, headers={"subject:": email_data.subject}
     )
-

@@ -4,19 +4,20 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.repositories import user_repo
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import User
+from app.repositories import user_repo
 from app.schemas import UserCreate
+from tests.utils.user import create_random_user
+from tests.utils.utils import random_email, random_lower_string
 
 
 def create_test_user(*, session: Session, user_create: UserCreate) -> User:
     hashed_password = get_password_hash(user_create.password)
-    return user_repo.create_user(session=session, user_create=user_create, hashed_password=hashed_password)
-
-from tests.utils.user import create_random_user
-from tests.utils.utils import random_email, random_lower_string
+    return user_repo.create_user(
+        session=session, user_create=user_create, hashed_password=hashed_password
+    )
 
 
 def test_get_users_superuser_me(

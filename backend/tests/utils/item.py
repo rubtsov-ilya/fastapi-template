@@ -1,8 +1,8 @@
 from sqlmodel import Session
 
 from app.models import Item
-from app.schemas import ItemCreate
 from app.repositories import item_repo
+from app.schemas import ItemCreate
 from tests.utils.user import create_random_user
 from tests.utils.utils import random_lower_string
 
@@ -15,4 +15,3 @@ def create_random_item(db: Session) -> Item:
     description = random_lower_string()
     item_in = ItemCreate(title=title, description=description)
     return item_repo.create_item(session=db, item_in=item_in, owner_id=owner_id)
-

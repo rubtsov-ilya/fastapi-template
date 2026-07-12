@@ -4,10 +4,9 @@ from sqlmodel import Session
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import User
-from app.schemas import UserCreate, UserUpdate, UserUpdateMe, UpdatePassword
 from app.repositories import user_repo
+from app.schemas import UpdatePassword, UserCreate, UserUpdate, UserUpdateMe
 from app.utils import generate_new_account_email, send_email
-
 
 
 def create_user_service(*, session: Session, user_in: UserCreate) -> User:
@@ -38,12 +37,16 @@ def create_user_service(*, session: Session, user_in: UserCreate) -> User:
     return user
 
 
-def update_user_service(*, session: Session, db_user: User, user_in: UserUpdate) -> User:
+def update_user_service(
+    *, session: Session, db_user: User, user_in: UserUpdate
+) -> User:
     """
     Business logic for updating a user.
     """
     if user_in.email:
-        existing_user = user_repo.get_user_by_email(session=session, email=user_in.email)
+        existing_user = user_repo.get_user_by_email(
+            session=session, email=user_in.email
+        )
         if existing_user and existing_user.id != db_user.id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
@@ -54,16 +57,23 @@ def update_user_service(*, session: Session, db_user: User, user_in: UserUpdate)
         hashed_password = get_password_hash(user_in.password)
 
     return user_repo.update_user(
-        session=session, db_user=db_user, user_in=user_in, hashed_password=hashed_password
+        session=session,
+        db_user=db_user,
+        user_in=user_in,
+        hashed_password=hashed_password,
     )
 
 
-def update_user_me_service(*, session: Session, current_user: User, user_in: UserUpdateMe) -> User:
+def update_user_me_service(
+    *, session: Session, current_user: User, user_in: UserUpdateMe
+) -> User:
     """
     Business logic for updating current user's profile.
     """
     if user_in.email:
-        existing_user = user_repo.get_user_by_email(session=session, email=user_in.email)
+        existing_user = user_repo.get_user_by_email(
+            session=session, email=user_in.email
+        )
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
@@ -77,7 +87,9 @@ def update_user_me_service(*, session: Session, current_user: User, user_in: Use
     return current_user
 
 
-def update_password_me_service(*, session: Session, current_user: User, body: UpdatePassword) -> None:
+def update_password_me_service(
+    *, session: Session, current_user: User, body: UpdatePassword
+) -> None:
     """
     Business logic for updating own password.
     """
@@ -92,4 +104,3 @@ def update_password_me_service(*, session: Session, current_user: User, body: Up
     current_user.hashed_password = hashed_password
     session.add(current_user)
     session.commit()
-

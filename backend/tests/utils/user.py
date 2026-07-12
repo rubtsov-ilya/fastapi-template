@@ -4,8 +4,8 @@ from sqlmodel import Session
 from app.core.config import settings
 from app.core.security import get_password_hash
 from app.models import User
-from app.schemas import UserCreate, UserUpdate
 from app.repositories import user_repo
+from app.schemas import UserCreate, UserUpdate
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -26,7 +26,9 @@ def create_random_user(db: Session) -> User:
     password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
     hashed_password = get_password_hash(user_in.password)
-    user = user_repo.create_user(session=db, user_create=user_in, hashed_password=hashed_password)
+    user = user_repo.create_user(
+        session=db, user_create=user_in, hashed_password=hashed_password
+    )
     return user
 
 
@@ -43,13 +45,19 @@ def authentication_token_from_email(
     if not user:
         user_in_create = UserCreate(email=email, password=password)
         hashed_password = get_password_hash(user_in_create.password)
-        user = user_repo.create_user(session=db, user_create=user_in_create, hashed_password=hashed_password)
+        user = user_repo.create_user(
+            session=db, user_create=user_in_create, hashed_password=hashed_password
+        )
     else:
         user_in_update = UserUpdate(password=password)
         if not user.id:
             raise Exception("User id not set")
         hashed_password = get_password_hash(password)
-        user = user_repo.update_user(session=db, db_user=user, user_in=user_in_update, hashed_password=hashed_password)
+        user = user_repo.update_user(
+            session=db,
+            db_user=user,
+            user_in=user_in_update,
+            hashed_password=hashed_password,
+        )
 
     return user_authentication_headers(client=client, email=email, password=password)
-
